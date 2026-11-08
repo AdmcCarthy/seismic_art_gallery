@@ -36,6 +36,8 @@
   const ratio = inner.map((v, i) => outer[i] / v);
   const arrowOf = (g) => (g > 1.25 ? "↑" : g < 0.8 ? "↓" : "≈");
 
+  // a horizon is named from the interpreters' file name when the export carries it
+  const hlabel = (h) => (P.horizon_labels && P.horizon_labels[h]) || P.horizons[h];
   const xs = P.sites.map((s) => s.x), ys = P.sites.map((s) => s.y);
   const x0 = d3.min(xs), x1 = d3.max(xs), y0 = d3.min(ys), y1 = d3.max(ys);
   const hasTruth = P.sites.some((s) => s.truth);
@@ -154,9 +156,9 @@
         x: n.x, y: n.y, r: n.r,
         lines: [
           `${P.sites[n.i].name}  ${arrowOf(ratio[n.i])} ×${ratio[n.i].toFixed(1)}`,
-          `${P.attribute}: oldest band ${inner[n.i].toFixed(2)} → youngest ${outer[n.i].toFixed(2)}`,
+          `${P.attribute}: oldest band${P.horizon_labels ? ` (${hlabel(0)})` : ""} ${inner[n.i].toFixed(2)} → youngest${P.horizon_labels ? ` (${hlabel(H - 1)})` : ""} ${outer[n.i].toFixed(2)}`,
           ...(hasHL ? (() => {
-            const s = P.sites[n.i], t = (e) => `${P.mean_time[e.horizon].toFixed(0)} ${P.domain.vertical_unit} horizon`;
+            const s = P.sites[n.i], t = (e) => P.horizon_labels ? hlabel(e.horizon) : `${P.mean_time[e.horizon].toFixed(0)} ${P.domain.vertical_unit} horizon`;
             return [
               `▲ high ${s.high.value.toFixed(2)} · ${t(s.high)} · azimuth ${azimuth(s.high.angle_deg)}°`,
               `▼ low ${s.low.value.toFixed(2)} · ${t(s.low)} · azimuth ${azimuth(s.low.angle_deg)}°`,
@@ -186,7 +188,7 @@
     for (let h = 0; h < H; h++) {
       const y = ly - (H - 1 - h) * 16;
       ctx.fillStyle = th.dim;
-      ctx.fillText(`${P.horizons[h]} · ${P.mean_time[h].toFixed(0)} ${P.domain.vertical_unit}`, lx - 26, y);
+      ctx.fillText(`${hlabel(h)} · ${P.mean_time[h].toFixed(0)} ${P.domain.vertical_unit}`, lx - 26, y);
       ctx.fillStyle = colour(h);
       ctx.fillRect(lx - 20, y - 8, 20, 4);
     }

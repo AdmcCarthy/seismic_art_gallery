@@ -1,0 +1,36 @@
+Volve data in this folder
+=========================
+
+These files are derived from the Volve dataset, published by Equinor ASA (operator)
+with ExxonMobil, Bayerngas and the Norwegian Petroleum Directorate (NPD), under the
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International licence:
+https://creativecommons.org/licenses/by-nc-sa/4.0/
+Published via https://www.equinor.com/ . Data owners: Equinor (operator), ExxonMobil
+(partner), Bayerngas (partner) and the NPD.
+
+What the licence asks, and how it is met here
+- Attribution: every figure carries the owners and the licence in its caption.
+- Non-commercial use only. The data shall not be resold.
+- Share-alike: the files in this folder are offered under the same licence,
+  CC BY-NC-SA 4.0.
+- Changes are indicated (below).
+
+Changes made to the original data
+- Only small derived extracts are included. The 3D SEG-Y volume and the interpretation
+  files are NOT included.
+- Rings: three circular sections read from the volume (nearest trace, no interpolation),
+  amplitudes scaled to 8-bit integers over one clip value.
+- Cities: windows of the volume around at most 3,500 picks of each of eight interpreted
+  surfaces (every k-th pick), aligned by a matched filter, with summary statistics.
+- Growth rings and flow: root-mean-square amplitude of such windows, and the apparent
+  dip of one interpreted surface smoothed over 150 m.
+- Surface names are read from the interpreters' file names; one abbreviation (BCU, Base
+  Cretaceous Unconformity) is expanded from general knowledge, not from the files.
+- The vertical domain (time) and quantity (amplitude) are stated by the publisher of
+  this gallery, not by the files; polarity is unknown.
+
+Disclaimer (from the dataset licence)
+The data are provided on an "as is" basis and may contain errors and omissions. Equinor
+and the former Volve licence partners provide no warranties, expressed or implied,
+either relating to the content or to the relevance of the data, and are not liable for
+any direct or indirect losses as a result of use of the data.

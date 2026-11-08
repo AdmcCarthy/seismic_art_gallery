@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Volve, real data</title>
+<style>
+  :root { --bg:#f5f1e8; --fg:#1d232e; --dim:#4a5262; --line:#d8d1c0; --link:#7a2f08; --box:#ece5d3; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0b0d12; --fg:#e6e9ef; --dim:#9aa3b2; --line:#252a35; --link:#e0a566; --box:#151922; }
+  }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui, sans-serif; }
+  main { max-width:780px; margin:0 auto; padding:32px 16px 48px; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  p { color:var(--dim); margin:6px 0; }
+  a { color:var(--link); }
+  .licence { background:var(--box); border:1px solid var(--line); padding:10px 14px; border-radius:6px; }
+  .card { border-top:1px solid var(--line); padding:14px 0; }
+  .card h2 { font-size:16px; margin:0; }
+  .links a { margin-right:14px; white-space:nowrap; }
+  pre { white-space:pre-wrap; font-size:12.5px; color:var(--dim); }
+</style>
+</head>
+<body>
+<main>
+  <h1>The same sketches on real Volve data</h1>
+  <p class="licence">Derived from the Volve dataset: Equinor ASA (operator), ExxonMobil, Bayerngas and the
+  Norwegian Petroleum Directorate, licensed
+  <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>. Attribution is kept in
+  every figure; use is non-commercial and share-alike, and the data shall not be resold. Only small derived
+  extracts are shown, not the volume. Changes, owners and the disclaimer are in
+  <a href="data/volve/NOTICE.txt">NOTICE.txt</a>. Domain TIME and quantity AMPLITUDE are stated by the
+  publisher, polarity is unknown, amplitudes are relative.</p>
+
+  <div class="card">
+    <h2>A · Rings: three circles about the survey centre</h2>
+    <p>Layers take the name of the interpreted surface they match (for example Utsira top).</p>
+    <div class="links">
+      <a href="rings.html?data=data/volve/rings.json&ring=1&theme=paper">ring 1</a>
+      <a href="rings.html?data=data/volve/rings.json&ring=2&theme=paper">ring 2</a>
+      <a href="rings.html?data=data/volve/rings.json&ring=3&theme=paper">ring 3</a>
+      <a href="rings.html?data=data/volve/rings.json&ring=2&mode=wiggle&theme=paper">wiggle</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>B · Cities: the interpreted surfaces</h2>
+    <p>One city per interpreted surface, named from the interpreters' files and ordered shallow to deep.</p>
+    <div class="links">
+      <a href="cities.html?data=data/volve/cities.json&theme=paper">paper</a>
+      <a href="cities.html?data=data/volve/cities.json">dark</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>C · Rings per horizon: five named surfaces, five sites</h2>
+    <p>RMS is not comparable between surfaces, so this is not growth through time.</p>
+    <div class="links">
+      <a href="growth.html?data=data/volve/growth.json&theme=paper">paper</a>
+      <a href="growth.html?data=data/volve/growth.json">dark</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>D · Flow over the Hugin Fm top</h2>
+    <p>Structural highs, lows and saddles of the smoothed surface.</p>
+    <div class="links">
+      <a href="flow.html?data=data/volve/flow.json&theme=paper&sep=6">paper</a>
+      <a href="flow.html?data=data/volve/flow.json&theme=paper&sep=6&dir=up">paper, updip</a>
+      <a href="flow.html?data=data/volve/flow.json&sep=6">dark</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Time or depth? The water-bottom check</h2>
+    <pre id="chk">loading...</pre>
+  </div>
+  <script>
+    fetch("data/volve/domain_check.txt").then((r) => r.text()).then((t) => { document.getElementById("chk").textContent = t; })
+      .catch(() => { document.getElementById("chk").textContent = "not available"; });
+  </script>
+  <p><a href="index.html">Back to the synthetic examples</a></p>
+</main>
+</body>
+</html>

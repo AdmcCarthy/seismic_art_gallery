@@ -20,11 +20,17 @@
     document.getElementById("error").textContent = String(e);
     return;
   }
-  let by = Art.param("by", "som");
-  if (by === "som" && !P.som) by = "kmeans";
-  if (by === "kmeans" && !P.kmeans) by = "som";
+  // three ways to group the picks: by the interpreted surface each was picked on (named
+  // from the interpreters' files: `formation`), by waveform shape on a SOM, or k-means
+  const has = { formation: !!P.categories, som: !!P.som, kmeans: !!P.kmeans };
+  const modes = ["formation", "som", "kmeans"].filter((k) => has[k]);
+  let by = Art.param("by", has.formation ? "formation" : "som");
+  if (!has[by]) by = modes[0];
   const th = Art.theme;
-  const nAnnot = +Art.param("annot", 6);
+  const nAnnot = +Art.param("annot", by === "formation" ? 4 : 6);
+  // young (shallow) is pale gold, old (deep) violet: the ramp the growth rings use
+  const ageRamp = d3.interpolateRgbBasis(["#4b2a8a", "#2f6fc4", "#27b39a", "#f2e27a"]);
+  const groupOf = () => (by === "som" ? P.som : by === "kmeans" ? P.kmeans : P.categories);
   const FONT = "system-ui, 'Segoe UI', Helvetica, Arial, sans-serif";
 
   const m = P.offsets.length;
@@ -50,6 +56,14 @@
       labels = P.som.bmu;
       anchor = (j) => [((j % C) + 0.5) / C, (Math.floor(j / C) + 0.5) / R];
       colour = (j) => gridColour(((j % C) + 0.5) / C, (Math.floor(j / C) + 0.5) / R);
+    } else if (kind === "formation") {
+      const cat = P.categories;
+      n = cat.names.length;
+      counts = cat.counts;
+      labels = cat.labels;
+      const C = Math.min(4, n), R = Math.ceil(n / C); // shallow to deep, left to right
+      anchor = (j) => [((j % C) + 0.5) / C, (Math.floor(j / C) + 0.5) / R];
+      colour = (j) => ageRamp(n > 1 ? 1 - j / (n - 1) : 0.5);
     } else {
       n = P.kmeans.k;
       counts = P.kmeans.counts;
@@ -96,7 +110,7 @@
     // (among cities of at least 1% of the picks), and within a city the spread of its
     // picks and the single highest and lowest pick with where they are. The extreme
     // picks are outliers by construction; the middle 90% is the city's typical range.
-    const stats = ((by === "som" ? P.som : P.kmeans).stats || {})[akey];
+    const stats = (groupOf().stats || {})[akey];
     const unit = akey === "thickness_truth" ? " ms" : "";
     const num = (v) => (akey === "thickness_truth" ? v.toFixed(0) : v.toFixed(2)) + unit;
     const hiCity = byKey[byKey.length - 1], loCity = byKey[0];
@@ -106,6 +120,7 @@
       return {
         x: d.x, y: d.y, r: d.R, mark: d === hiCity ? "up" : d === loCity ? "down" : "",
         lines: [
+          by === "formation" ? P.categories.names[d.id] : "",
           tag,
           `n = ${d.count.toLocaleString("en-GB")} (${((100 * d.count) / g.total).toFixed(0)}%)`,
           FMT[akey] ? FMT[akey](means[akey][d.id]) : `${akey} ${means[akey][d.id].toFixed(2)}`,
@@ -119,14 +134,18 @@
   }
 
   function captionLines() {
-    const lines = [
+    const lines = by === "formation" ? [
+      `Cities = interpreted surfaces, named from the interpreters' files (formation, group or unit as written in the name); each city holds the picks of one surface (n=${P.n} drawn); area ∝ number of picks`,
+      `spoke = one pick: its ${P.offsets[0]}…+${P.offsets[m - 1]} ${P.offset_unit} window runs outward and wiggles by amplitude (relative); spokes ordered by RMS`,
+      `colour and position = shallow (young, pale gold, top left) to deep (old, violet) by mean ${P.domain.vertical}; ${P.categories.note || ""}`,
+    ] : [
       `Cities = ${by === "som" ? "SOM nodes" : "k-means classes"} of waveform SHAPE along horizon "${P.horizon}"; area ∝ number of picks (n=${P.n})`,
       `spoke = one pick: its ${P.offsets[0]}…+${P.offsets[m - 1]} ${P.offset_unit} window runs outward and wiggles by amplitude (relative); spokes ordered by RMS`,
       by === "som" ? "colour = position on the SOM grid; cities stay near it, nudged apart by a collision force" : "k-means classes are unordered; the number of classes is a choice, not a finding",
     ];
     if (nAnnot && akey && P.features[akey]) {
       lines.push(`callouts: n = picks in the city; means over every pick in it${akey === "thickness_truth" ? "; thickness is the bed thickness built into the synthetic cube, not observable in real data" : ""}`);
-      if ((by === "som" ? P.som : P.kmeans).stats) {
+      if (groupOf().stats) {
         lines.push(`▲ / ▼ mark the cities with the highest / lowest mean of ${akey}; "middle 90%" is the 5th to 95th percentile over the picks in the city, and the highest and lowest single picks (with where) are outliers, often mis-tracked picks`);
       }
     }
@@ -158,9 +177,9 @@
       });
     }
     const sim = d3.forceSimulation(nodes)
-      .force("x", d3.forceX((d) => d.tx).strength(by === "som" ? 0.1 : 0.04))
-      .force("y", d3.forceY((d) => d.ty).strength(by === "som" ? 0.1 : 0.04))
-      .force("collide", d3.forceCollide((d) => d.R + 5).iterations(6))
+      .force("x", d3.forceX((d) => d.tx).strength(by === "kmeans" ? 0.04 : 0.1))
+      .force("y", d3.forceY((d) => d.ty).strength(by === "kmeans" ? 0.04 : 0.1))
+      .force("collide", d3.forceCollide((d) => d.R + (by === "formation" ? 30 : 5)).iterations(6))
       .stop();
     for (let i = 0; i < 500; i++) sim.tick();
 
@@ -205,6 +224,21 @@
     });
     ctx.globalCompositeOperation = "source-over";
 
+    if (by === "formation") {  // every city carries the name of its surface
+      ctx.font = `600 12px ${FONT}`;
+      ctx.textAlign = "center";
+      nodes.forEach((d) => {
+        ctx.fillStyle = th.fg;
+        ctx.font = `600 12px ${FONT}`;
+        ctx.fillText(P.categories.names[d.id], d.x, d.y + d.R + 15);
+        ctx.fillStyle = th.dim;
+        ctx.font = `11px ${FONT}`;
+        const mt = P.categories.meta[d.id].mean_time;
+        ctx.fillText(`${mt.toFixed(0)} ${P.offset_unit} · n ${d.count.toLocaleString("en-GB")}`, d.x, d.y + d.R + 28);
+      });
+      ctx.textAlign = "left";
+    }
+
     // static callouts
     const notes = callouts(g, nodes);
     notes.forEach((it) => {  // ▲ / ▼ above the cities with the highest / lowest mean
@@ -216,7 +250,9 @@
       ctx.fillStyle = th.fg; ctx.fill();
       ctx.strokeStyle = th.bg; ctx.lineWidth = 1.2; ctx.stroke();
     });
-    if (notes.length) Art.annotate(ctx, W, H, notes, nodes.map((d) => ({ x: d.x, y: d.y, r: d.R })));
+    // the name label under each formation city is an obstacle too, so a callout avoids it
+    const labelBlocks = by === "formation" ? nodes.map((d) => ({ x: d.x, y: d.y + d.R + 22, r: 24 })) : [];
+    if (notes.length) Art.annotate(ctx, W, H, notes, [...nodes.map((d) => ({ x: d.x, y: d.y, r: d.R })), ...labelBlocks]);
 
     // key: what each colour / position means
     const keyX = W - 16, keyY = H - 16;
@@ -245,6 +281,19 @@
         ctx.stroke();
         ctx.globalAlpha = 1;
       }
+    } else if (by === "formation") {
+      const cat = P.categories, k = cat.names.length;
+      ctx.textAlign = "right";
+      ctx.fillStyle = th.dim;
+      ctx.fillText("surfaces, shallow (young) to deep (old)", keyX, keyY - k * 16 - 8);
+      cat.names.forEach((name, j) => {
+        const y = keyY - (k - 1 - j) * 16;
+        ctx.fillStyle = th.dim;
+        ctx.fillText(`${name} · ${cat.meta[j].mean_time.toFixed(0)} ${P.offset_unit}`, keyX - 26, y);
+        ctx.fillStyle = th.ink(ageRamp(k > 1 ? 1 - j / (k - 1) : 0.5));
+        ctx.fillRect(keyX - 20, y - 8, 20, 4);
+      });
+      ctx.textAlign = "left";
     } else {
       P.kmeans.centroids.forEach((cen, j) => {
         const x0 = keyX - 110, y0 = keyY - 30 - (P.kmeans.k - 1 - j) * 34;
@@ -293,7 +342,7 @@
   render();
   window.addEventListener("resize", render);
   window.addEventListener("keydown", (e) => {
-    if (e.key === "g") { by = by === "som" ? "kmeans" : "som"; render(); }
+    if (e.key === "g") { by = modes[(modes.indexOf(by) + 1) % modes.length]; render(); }
     else if (e.key === "s") Art.savePNG(canvas, `waveform-cities-${by}.png`);
     else if (e.key === "v") Art.saveText(svgString(), `waveform-cities-${by}.svg`, "image/svg+xml");
   });

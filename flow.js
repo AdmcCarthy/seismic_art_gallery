@@ -54,7 +54,7 @@
 
   function captionLines() {
     const lines = [
-      `Flow over "${P.horizon}": lines follow steepest ${dirSign > 0 ? "descent (toward increasing" : "ASCENT (toward decreasing"} ${P.domain.vertical}); width = apparent dip, colour = ${P.attribute} (relative)`,
+      `Flow over "${P.horizon_label || P.horizon}"${P.horizon_label ? ` (${P.horizon})` : ""}: lines follow steepest ${dirSign > 0 ? "descent (toward increasing" : "ASCENT (toward decreasing"} ${P.domain.vertical}); width = apparent dip, colour = ${P.attribute} (relative)`,
       `dip is time change per map distance (${P.slope_unit}), not converted to depth; structure smoothed by a local plane fit`,
       `streamlines evenly spaced (Jobard-Lefer, spacing ${sep}px), direction: ${dirSign > 0 ? "downdip" : "UPDIP (reversed)"}`,
     ];

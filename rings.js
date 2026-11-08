@@ -101,7 +101,7 @@
       `angle = along the circle (counter-clockwise from east) · radius = ${P.domain.vertical} · colour = amplitude (relative), mode: ${mode}`,
     ];
     if ((ring.reflectors || []).length && +Art.param("annot", 3) > 0) {
-      lines.push(`callouts: layers seen as peaks of the loop-averaged |amplitude| (circle, with the brightest trace); ▲ high / ▼ low = the layer's shallowest / deepest ${P.domain.vertical} round the loop, from the envelope peak of each trace filtered along the loop; "at least" = the swing reached the search limit`);
+      lines.push(`callouts: layers seen as peaks of the loop-averaged |amplitude| (circle, with the brightest trace); ▲ high / ▼ low = the layer's shallowest / deepest ${P.domain.vertical} round the loop, from the envelope peak of each trace filtered along the loop; "at least" = the swing reached the search limit${(ring.reflectors || []).some((f) => f.surface) ? "; a layer takes the name of the interpreted surface (from its file name) whose picks along the circle lie within 25 ms, otherwise it stays unnamed" : ""}`);
     }
     return lines;
   };
@@ -231,12 +231,13 @@
         return {
           x: cx + r * Math.cos(f.peak_angle), y: cy - r * Math.sin(f.peak_angle), r: 7,
           lines: [
-            `Layer at ${axis} ${f.time.toFixed(0)} ${u}`,
+            f.surface ? `${f.surface.label} · ${axis} ${f.time.toFixed(0)} ${u}` : `Layer at ${axis} ${f.time.toFixed(0)} ${u}`,
+            f.surface ? `named from the interpreted surface: picks ${f.surface.picked.toFixed(0)} ${u} (5-95% ${f.surface.swing.toFixed(0)} ${u})${f.surface.expanded ? `; ${f.surface.expanded}` : ""}` : "",
             `${f.truncated ? "at least " : ""}${f.undulation.toFixed(0)} ${u} swing round the loop`,
             `mean |amp| x${f.strength.toFixed(1)} the ring median`,
             `brightest at IL ${f.inline} / XL ${f.crossline}, ${(f.peak_angle * 180 / Math.PI).toFixed(0)} deg`,
             `x${f.peak_ratio.toFixed(1)} the median of this layer's trace maxima`,
-          ],
+          ].filter(Boolean),
         };
       });
       ctx.strokeStyle = paper ? th.fg : "#ffffff"; ctx.lineWidth = 1.4;
@@ -250,7 +251,7 @@
           const t = f[`${k}_time`], a = f[`${k}_angle`], r = radiusOf(t);
           marks.push({
             x: cx + r * Math.cos(a), y: cy - r * Math.sin(a), r: 5, up: k === "shallow",
-            lines: [`${word} of the ${f.time.toFixed(0)} ${u} layer: ${t.toFixed(0)} ${u}`,
+            lines: [`${word} of the ${f.surface ? f.surface.label : `${f.time.toFixed(0)} ${u} layer`}: ${t.toFixed(0)} ${u}`,
               `IL ${f[`${k}_inline`]} / XL ${f[`${k}_crossline`]}`],
           });
         });
@@ -276,7 +277,7 @@
     ctx.font = "11px system-ui, sans-serif";
     ctx.lineWidth = 1;
     const t0v = P.samples[0], t1v = P.samples[ns - 1];
-    const tick = (t1v - t0v) > 600 ? 200 : 100;
+    const tick = (t1v - t0v) > 2000 ? 500 : (t1v - t0v) > 600 ? 200 : 100;
     for (let t = Math.ceil(t0v / tick) * tick; t <= t1v; t += tick) {
       const r = r0 + ((Rmax - r0) * (t - t0v)) / (t1v - t0v);
       ctx.beginPath(); ctx.moveTo(cx + r, cy); ctx.lineTo(cx + r, cy + 6); ctx.stroke();
