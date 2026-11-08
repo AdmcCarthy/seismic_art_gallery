@@ -24,6 +24,10 @@ Changes made to the original data
   surfaces (every k-th pick), aligned by a matched filter, with summary statistics.
 - Growth rings and flow: root-mean-square amplitude of such windows, and the apparent
   dip of one interpreted surface smoothed over 150 m.
+- Trace shells: the analytic signal (envelope, phase, instantaneous frequency) of 48
+  traces. Fault constellations: a per-pick discontinuity along one interpreted surface,
+  with the interpreters' fault polygons for that surface as reference lines. One thread:
+  an 80 ms slab of every trace, 8-bit.
 - Surface names are read from the interpreters' file names; one abbreviation (BCU, Base
   Cretaceous Unconformity) is expanded from general knowledge, not from the files.
 - The vertical domain (time) and quantity (amplitude) are stated by the publisher of
