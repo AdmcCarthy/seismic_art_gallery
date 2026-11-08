@@ -25,3 +25,9 @@ It is a published copy of the `web/` folder of the private `seismic_art` project
 by that project's `scripts/publish_gallery.py`. Edit the project, not this copy.
 
 `vendor/d3.min.js` is D3 7.9.0 (ISC licence, `vendor/D3-LICENSE.txt`).
+
+## Licence and acknowledgement
+
+MIT License with Acknowledgement ([LICENSE](LICENSE)): the MIT terms plus one condition. Anything built with this work says so,
+visibly and in plain words, and does not imply endorsement: "Built with seismic_art_gallery by Adam McCarthy (https://github.com/AdmcCarthy/seismic_art_gallery)". The wording is custom, so
+the licence is not OSI-approved. Third-party data and vendored code keep their own terms.
