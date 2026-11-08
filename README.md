@@ -1,5 +1,7 @@
 # seismic_art gallery
 
+**Seismic amplitude as data art, every figure synthetic.**
+
 D3 sketches that turn seismic amplitude into data art (rings, waveform cities, growth
 rings, flow fields), served with GitHub Pages.
 
