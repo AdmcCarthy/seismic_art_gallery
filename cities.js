@@ -61,7 +61,7 @@
       n = cat.names.length;
       counts = cat.counts;
       labels = cat.labels;
-      const C = Math.min(4, n), R = Math.ceil(n / C); // shallow to deep, left to right
+      const C = n <= 4 ? n : Math.ceil(n / 2), R = Math.ceil(n / C); // shallow to deep, left to right
       anchor = (j) => [((j % C) + 0.5) / C, (Math.floor(j / C) + 0.5) / R];
       colour = (j) => ageRamp(n > 1 ? 1 - j / (n - 1) : 0.5);
     } else {
@@ -135,7 +135,7 @@
 
   function captionLines() {
     const lines = by === "formation" ? [
-      `Cities = interpreted surfaces, named from the interpreters' files (formation, group or unit as written in the name); each city holds the picks of one surface (n=${P.n} drawn); area ∝ number of picks`,
+      `Cities = interpreted surfaces, named from ${P.categories.meta.some((c) => c.illustrative) ? "illustrative file-style names" : "the interpreters' files"} (formation, group or unit as written in the name); each city holds the picks of one surface (n=${P.n} drawn); area ∝ number of picks`,
       `spoke = one pick: its ${P.offsets[0]}…+${P.offsets[m - 1]} ${P.offset_unit} window runs outward and wiggles by amplitude (relative); spokes ordered by RMS`,
       `colour and position = shallow (young, pale gold, top left) to deep (old, violet) by mean ${P.domain.vertical}; ${P.categories.note || ""}`,
     ] : [
