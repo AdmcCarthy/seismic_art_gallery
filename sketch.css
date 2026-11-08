@@ -1,0 +1,15 @@
+:root { --bg: #0b0d12; --fg: #e6e9ef; --dim: #9aa3b2; --faint: #6c7686; }
+:root[data-theme="paper"] { --bg: #f5f1e8; --fg: #1d232e; --dim: #4a5262; --faint: #767d8c; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--dim); }
+body { font: 12px/1.45 system-ui, "Segoe UI", sans-serif; overflow: hidden; }
+canvas { display: block; position: absolute; left: 0; top: 0; }
+#caption {
+  position: fixed; left: 16px; bottom: 12px; max-width: 62ch;
+  pointer-events: none; text-shadow: 0 0 4px var(--bg), 0 0 8px var(--bg);
+}
+#caption strong { color: var(--fg); font-weight: 600; font-size: 13px; }
+#caption .dim { color: var(--faint); }
+#hint { position: fixed; right: 16px; top: 10px; color: var(--faint); text-align: right; }
+#error { position: fixed; left: 16px; top: 16px; color: #ff9d8a; }
+#svgout { position: absolute; left: 0; top: 0; }
+#svgout svg { display: block; }
