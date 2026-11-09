@@ -2,20 +2,21 @@ Volve data in this folder
 =========================
 
 These files are derived from the Volve dataset, published by Equinor ASA (operator)
-with the former Volve licence partners (ExxonMobil Exploration & Production Norway AS and
-Bayerngas Norge AS), under the Volve Terms and Conditions for the licence to the data. The
-terms are based on CC BY 4.0 with two changes: the data may not be sold, and the licence
-covers all data in the set whether or not copyright applies.
+with the former Volve licence partners (ExxonMobil Exploration & Production Norway AS
+and Bayerngas Norge AS), under the Volve Terms and Conditions for the licence to the
+data. The terms are based on CC BY 4.0 with two changes: the data may not be sold, and
+the licence covers all data in the set whether or not copyright applies.
 https://www.equinor.com/energy/volve-data-sharing
 Data owners: Equinor (operator) and the former Volve licence partners.
 
 What the terms ask, and how it is met here
-- Credit: every figure carries the owners and the terms in its caption; this notice links to them.
+- Credit: every figure carries the owners and the terms in its caption; this notice
+  links to them.
 - Commercial and non-commercial use are allowed. The data shall not be sold.
 - Adapted material may be shared, but not under a licence that prevents recipients from
   complying with the terms.
-- The data is not presented misleadingly or distorted, and no endorsement by Equinor or the
-  former partners is implied.
+- The data is not presented misleadingly or distorted, and no endorsement by Equinor or
+  the former partners is implied.
 - Changes are indicated (below).
 
 Changes made to the original data
