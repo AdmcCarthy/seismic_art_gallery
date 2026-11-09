@@ -1,0 +1,92 @@
+{
+ "kind": "volve",
+ "attribution": "Contains data from the Volve data village, \u00a9 Equinor ASA and the former Volve licence partners (ExxonMobil E&P Norway, Bayerngas Norge). Used under the Volve Terms and Conditions. Processed by seismic_art.",
+ "size_css_px": [
+  1400,
+  1000
+ ],
+ "device_scale": 1.5,
+ "note": "stills of the sketches without their captions; the caption, domain, polarity and notes are on the linked page",
+ "items": [
+  {
+   "id": "rings_pair",
+   "title": "Double exposure: 2002 and 2010",
+   "line": "The ST0202 base against the ST10010 monitor on one ring, 2300 m across.",
+   "href": "rings.html?data=data/volve/rings_pair.json&ring=3",
+   "image": "data/volve/gallery/rings_pair.jpg",
+   "kind": "volve"
+  },
+  {
+   "id": "thread",
+   "title": "One thread: 288,694 traces",
+   "line": "The whole survey in file order along one spiral, an 80 ms slab round the Utsira top.",
+   "href": "thread.html?data=data/volve/thread.json",
+   "image": "data/volve/gallery/thread.jpg",
+   "kind": "volve"
+  },
+  {
+   "id": "constellations",
+   "title": "Fault constellations on the Hugin Fm top",
+   "line": "Stars where the waveform breaks laterally, against the interpreters' fault polygons.",
+   "href": "constellations.html?data=data/volve/constellations.json",
+   "image": "data/volve/gallery/constellations.jpg",
+   "kind": "volve"
+  },
+  {
+   "id": "rings",
+   "title": "Seismic rings",
+   "line": "Three circles about the survey centre; layers take the names of the interpreted surfaces.",
+   "href": "rings.html?data=data/volve/rings.json&ring=2&theme=paper",
+   "image": "data/volve/gallery/rings.jpg",
+   "kind": "volve"
+  },
+  {
+   "id": "flow",
+   "title": "Flow over the Hugin Fm top",
+   "line": "Steepest descent on the picked surface, with its highs, lows and saddles.",
+   "href": "flow.html?data=data/volve/flow.json&theme=paper&sep=6",
+   "image": "data/volve/gallery/flow.jpg",
+   "kind": "volve"
+  },
+  {
+   "id": "engraving",
+   "title": "Engraving of what changed, inline 10161",
+   "line": "Monitor minus base across the Hugin field, the grain of repeatability above.",
+   "href": "engraving.html?data=data/volve/engraving.json&theme=paper&ghost=0",
+   "image": "data/volve/gallery/engraving.jpg",
+   "kind": "volve"
+  },
+  {
+   "id": "cities",
+   "title": "Formations as cities",
+   "line": "One city per interpreted surface, named from the interpreters' own files.",
+   "href": "cities.html?data=data/volve/cities.json&theme=paper",
+   "image": "data/volve/gallery/cities.jpg",
+   "kind": "volve"
+  },
+  {
+   "id": "shells",
+   "title": "Trace shells",
+   "line": "Six traces from 900 to 2900 ms, colour by instantaneous frequency.",
+   "href": "shells.html?data=data/volve/shells.json&theme=paper",
+   "image": "data/volve/gallery/shells.jpg",
+   "kind": "volve"
+  },
+  {
+   "id": "growth",
+   "title": "Rings per horizon",
+   "line": "Five named surfaces, five sites; lateral variation per level.",
+   "href": "growth.html?data=data/volve/growth.json&theme=paper",
+   "image": "data/volve/gallery/growth.jpg",
+   "kind": "volve"
+  },
+  {
+   "id": "shells_pair",
+   "title": "Unwinding shells: 2002 and 2010",
+   "line": "Six traces drawn twice, the monitor's spiral coloured by how far it has turned from the base's.",
+   "href": "shells.html?data=data/volve/shells_pair.json&theme=paper",
+   "image": "data/volve/gallery/shells_pair.jpg",
+   "kind": "volve"
+  }
+ ]
+}
