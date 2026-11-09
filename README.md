@@ -16,9 +16,9 @@ and polarity.
 
 ## Volve data and its licence
 The files under `data/volve/` derive from the Volve dataset published by Equinor ASA with
-ExxonMobil, Bayerngas and the Norwegian Petroleum Directorate, licensed
-[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/): attribute the
-owners, use it non-commercially, share adaptations alike, and do not resell it.
+the former Volve licence partners (ExxonMobil and Bayerngas), under the
+[Volve Terms and Conditions](https://www.equinor.com/energy/volve-data-sharing), which are based on CC BY 4.0 with two changes: the data may not be
+sold, and the licence covers all data in the set. Credit the owners and link the terms.
 `data/volve/NOTICE.txt` lists the owners, the changes made and the disclaimer. The volume
 itself and the interpretation files are not included.
 
