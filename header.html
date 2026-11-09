@@ -36,9 +36,10 @@
 <main class="g-wrap">
   <section class="hz-demo">
     <h1>The horizon band</h1>
-    <p class="dek">A page header cut from the seismic itself: a window of one section as texture in the shale
-    ladder, the interpreted surfaces as lines, the one the page is about in the highlight. A replacement
-    for the drawn motif that opens a SubScout story, in the same tokens.</p>
+    <p class="dek">A page header made of seismic: a window of one section as texture in the shale ladder, a
+    geometry the eye reads and nothing else; where a page has interpreted surfaces to show, they can be
+    drawn as lines with the page's own in the highlight. A replacement for the drawn motif that opens a
+    SubScout story, in the same tokens.</p>
     <div id="band" class="hz-band"></div>
     <div class="hz-controls">
       <label>height <input id="height" type="range" min="90" max="320" value="160"></label>
@@ -67,6 +68,7 @@
   let band = horizonBand(el, P, opts).observe();
   const sel = document.getElementById("highlight");
   sel.innerHTML = P.surfaces.map((s) => `<option${s.label === opts.highlight ? " selected" : ""}>${s.label}</option>`).join("");
+  if (!P.surfaces.length) sel.parentElement.style.display = "none";  // no surfaces, nothing to highlight
   const rebuild = () => { el.innerHTML = ""; band = horizonBand(el, P, opts); band.draw(el.clientWidth); };
   document.getElementById("height").value = opts.height;
   document.getElementById("height").addEventListener("input", (e) => { opts.height = +e.target.value; rebuild(); });

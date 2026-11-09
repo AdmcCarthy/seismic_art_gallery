@@ -60,10 +60,11 @@
 </main>
 <script src="gallery.js"></script>
 <script type="module">
-  // the hero band: real seismic when the Volve set is published, the model otherwise
+  // the hero band: the synthetic section with its geometry (the Volve band with its
+  // surfaces is on header.html?data=data/volve/header.json)
   import { horizonBand } from "./lib/horizon-band.js";
   const el = document.getElementById("band");
-  for (const url of ["data/volve/header.json", "data/synthetic/header.json"]) {
+  for (const url of ["data/synthetic/header.json"]) {
     try {
       const r = await fetch(url);
       if (!r.ok) continue;
