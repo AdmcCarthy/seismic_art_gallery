@@ -68,7 +68,7 @@
     try {
       const r = await fetch(url);
       if (!r.ok) continue;
-      horizonBand(el, await r.json(), { height: 150 }).observe();
+      horizonBand(el, await r.json(), { height: 80, caption: false, palette: "fjord" }).observe();
       break;
     } catch (e) { /* try the next */ }
   }
