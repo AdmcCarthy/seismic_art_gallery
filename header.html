@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en" data-colour-scheme="light" data-surface="nordic-cool" data-type="ledger" data-palette="tide">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The horizon band</title>
+<meta name="description" content="A page header cut from real seismic with its interpreted surfaces, in SubScout's tokens: a replacement for the procedural horizon motif.">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Instrument+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="vendor/subscout/tokens.css">
+<link rel="stylesheet" href="vendor/subscout/base.css">
+<link rel="stylesheet" href="gallery.css">
+<style>
+  .hz-demo { padding-block: var(--ss-space-xxl) var(--ss-space-l); }
+  .hz-demo h1 { font-family: var(--ss-font-display); font-weight: var(--ss-display-weight); letter-spacing: var(--ss-display-tracking); font-size: clamp(2.2rem, 5vw, 3.6rem); line-height: 1.05; margin: 0 0 var(--ss-space-m); max-width: 16ch; }
+  .hz-demo .dek { font-size: var(--ss-size-standfirst); color: var(--ss-text-subtle); max-width: 46rem; margin: 0 0 var(--ss-space-xl); }
+  .hz-band { width: 100%; }
+  .hz-controls { display: flex; gap: var(--ss-space-m); flex-wrap: wrap; align-items: center; margin: var(--ss-space-m) 0; font-size: var(--ss-size-label); color: var(--ss-text-muted); }
+  .hz-controls select, .hz-controls input { font: inherit; }
+  .hz-notes { color: var(--ss-text-muted); font-size: var(--ss-size-caption); max-width: 72ch; }
+</style>
+</head>
+<body>
+<header class="g-top">
+  <div class="g-wrap">
+    <a class="g-brand" href="index.html">Seismic as art</a>
+    <nav class="g-nav">
+      <a href="index.html">gallery</a>
+      <a href="sketches.html">all sketches</a>
+      <button class="g-scheme" id="scheme" type="button" aria-label="switch colour scheme">dark</button>
+    </nav>
+  </div>
+</header>
+<main class="g-wrap">
+  <section class="hz-demo">
+    <h1>The horizon band</h1>
+    <p class="dek">A page header cut from the seismic itself: a window of one section as texture in the shale
+    ladder, the interpreted surfaces as lines, the one the page is about in the highlight. A replacement
+    for the drawn motif that opens a SubScout story, in the same tokens.</p>
+    <div id="band" class="hz-band"></div>
+    <div class="hz-controls">
+      <label>height <input id="height" type="range" min="90" max="320" value="160"></label>
+      <label>highlight <select id="highlight"></select></label>
+      <label><input id="fade" type="checkbox" checked> fade into the page</label>
+      <label><input id="caption" type="checkbox" checked> label</label>
+    </div>
+    <p class="hz-notes" id="notes"></p>
+  </section>
+</main>
+<script type="module">
+  import { horizonBand } from "./lib/horizon-band.js";
+  const root = document.documentElement, button = document.getElementById("scheme");
+  const apply = (s) => { root.dataset.colourScheme = s; button.textContent = s === "dark" ? "light" : "dark"; };
+  let scheme = "light";
+  try { scheme = localStorage.getItem("seismic-art-scheme") || scheme; } catch (e) { /* ignore */ }
+  scheme = new URLSearchParams(location.search).get("scheme") || scheme;
+  apply(scheme);
+  button.addEventListener("click", () => { scheme = scheme === "dark" ? "light" : "dark"; apply(scheme); try { localStorage.setItem("seismic-art-scheme", scheme); } catch (e) { /* ignore */ } });
+
+  const q = new URLSearchParams(location.search);
+  const url = q.get("data") || "data/synthetic/header.json";
+  const P = await (await fetch(url)).json();
+  const el = document.getElementById("band");
+  const opts = { height: +q.get("height") || 160, highlight: q.get("highlight") || P.highlight, fade: q.get("fade") !== "0", caption: q.get("caption") !== "0" };
+  let band = horizonBand(el, P, opts).observe();
+  const sel = document.getElementById("highlight");
+  sel.innerHTML = P.surfaces.map((s) => `<option${s.label === opts.highlight ? " selected" : ""}>${s.label}</option>`).join("");
+  const rebuild = () => { el.innerHTML = ""; band = horizonBand(el, P, opts); band.draw(el.clientWidth); };
+  document.getElementById("height").value = opts.height;
+  document.getElementById("height").addEventListener("input", (e) => { opts.height = +e.target.value; rebuild(); });
+  sel.addEventListener("change", (e) => { opts.highlight = e.target.value; rebuild(); });
+  document.getElementById("fade").addEventListener("change", (e) => { opts.fade = e.target.checked; rebuild(); });
+  document.getElementById("caption").addEventListener("change", (e) => { opts.caption = e.target.checked; rebuild(); });
+  const dom = P.domain ? `${P.domain.vertical === "time" ? "TWT" : "depth"} [${P.domain.vertical_unit}], ${P.domain.quantity}` : "";
+  const sentence = (s) => (/[.!?]$/.test(s) ? s : s + ".");
+  document.getElementById("notes").textContent = [
+    `${P.title}. ${dom}; polarity ${P.polarity}`, P.attribution, `Source: ${P.source_file}`,
+    ...(P.notes || []).slice(0, 3), ...(P.names_note ? [P.names_note] : []),
+  ].map(sentence).join(" ");
+</script>
+</body>
+</html>

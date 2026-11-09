@@ -20,6 +20,7 @@
     <nav class="g-nav">
       <a href="sketches.html">all sketches</a>
       <a href="volve.html">Volve pages</a>
+      <a href="header.html">horizon band</a>
       <a href="https://github.com/AdmcCarthy/seismic_art_gallery">source</a>
       <button class="g-scheme" id="scheme" type="button" aria-label="switch colour scheme">light</button>
     </nav>
@@ -31,6 +32,7 @@
     <p>Amplitude from a 3D survey, drawn as rings, cities, shells, constellations and one thread; and two
     surveys of the same field, eight years apart, laid over each other as one picture. Each still opens
     the live sketch, which carries its caption, domain, polarity and source.</p>
+    <div id="band" class="g-band" aria-hidden="false"></div>
   </section>
 
   <section class="g-section" id="volve">
@@ -57,5 +59,18 @@
   </footer>
 </main>
 <script src="gallery.js"></script>
+<script type="module">
+  // the hero band: real seismic when the Volve set is published, the model otherwise
+  import { horizonBand } from "./lib/horizon-band.js";
+  const el = document.getElementById("band");
+  for (const url of ["data/volve/header.json", "data/synthetic/header.json"]) {
+    try {
+      const r = await fetch(url);
+      if (!r.ok) continue;
+      horizonBand(el, await r.json(), { height: 150 }).observe();
+      break;
+    } catch (e) { /* try the next */ }
+  }
+</script>
 </body>
 </html>
