@@ -14,17 +14,22 @@
   }
 
   let ringNo = Math.min(Math.max(+Art.param("ring", 1), 1), P.rings.length) - 1;
-  let mode = Art.param("mode", "image");
+  // modes: image, wiggle; with a second vintage in the export (rings_pair) also
+  // double (both vintages as two inks on one ring) and breathe (a slow cross-fade)
+  const hasPair = !!(P.pair && P.rings[0].monitor_amp);
+  let mode = Art.param("mode", hasPair ? "double" : "image");
+  if (!hasPair && (mode === "double" || mode === "breathe")) mode = "image";
   // gamma > 1 suppresses weak amplitudes (noise) so strong reflectors stand out
   const gamma = +Art.param("gamma", 1.4);
   const ns = P.samples.length;
+  let animation = null;
 
   // Uniform polar raster [theta][sample] from the (slightly uneven) traces, wrapped.
-  function polarRaster(ring) {
+  function polarRaster(ring, key) {
     const nT = ring.n_traces;
     const nTheta = Math.max(720, nT * 2);
     const raster = new Float32Array(nTheta * ns);
-    const a = ring.angles;
+    const a = ring.angles, amp = ring[key];
     const TAU = 2 * Math.PI;
     let k = 0;
     for (let t = 0; t < nTheta; t++) {
@@ -34,15 +39,16 @@
       const a0 = a[k];
       const a1 = k + 1 < nT ? a[k + 1] : a[0] + TAU;
       const w = a1 > a0 ? Math.min(Math.max((th - a0) / (a1 - a0), 0), 1) : 0;
-      const A = ring.amp[k], B = ring.amp[k1];
+      const A = amp[k], B = amp[k1];
       for (let j = 0; j < ns; j++) raster[t * ns + j] = ((1 - w) * A[j] + w * B[j]) / 127;
     }
     return { raster, nTheta };
   }
   const cache = new Map();
-  const polar = (i) => {
-    if (!cache.has(i)) cache.set(i, polarRaster(P.rings[i]));
-    return cache.get(i);
+  const polar = (i, key = "amp") => {
+    const id = `${i}:${key}`;
+    if (!cache.has(id)) cache.set(id, polarRaster(P.rings[i], key));
+    return cache.get(id);
   };
 
   // Colour: strong negative cyan, zero ~ background, strong positive cream-gold.
@@ -98,8 +104,14 @@
     const ring = P.rings[ringNo];
     const lines = [
       `Ring ${ringNo + 1} of ${P.rings.length}: a circle of radius ${ring.radius} (coordinate units), ${ring.n_traces} nearest traces, closed loop`,
-      `angle = along the circle (counter-clockwise from east) · radius = ${P.domain.vertical} · colour = amplitude (relative), mode: ${mode}`,
     ];
+    if (mode === "double") {
+      lines.push(`double exposure: ${P.pair.base_label} and ${P.pair.monitor_label} on the same ring; what both have is laid down in a neutral ink, what only the base has in ${paper ? "blue" : "cyan"}, what only the monitor has in orange, so an event that moved or faded between the surveys leaves a coloured fringe and an unchanged one stays neutral; the monitor was moved by ${P.pair.bulk_shift_ms >= 0 ? "+" : ""}${P.pair.bulk_shift_ms} ms and scaled by ${P.pair.scale.toFixed(2)} first (notes)`);
+    } else if (mode === "breathe") {
+      lines.push(`breathing: the ring cross-fades between ${P.pair.base_label} and ${P.pair.monitor_label} every six seconds; the unchanged part holds still, the changed part moves (web only; s saves the frame shown)`);
+    } else {
+      lines.push(`angle = along the circle (counter-clockwise from east) · radius = ${P.domain.vertical} · colour = amplitude (relative), mode: ${mode}`);
+    }
     if ((ring.reflectors || []).length && +Art.param("annot", 3) > 0) {
       lines.push(`callouts: layers seen as peaks of the loop-averaged |amplitude| (circle, with the brightest trace); ▲ high / ▼ low = the layer's shallowest / deepest ${P.domain.vertical} round the loop, from the envelope peak of each trace filtered along the loop; "at least" = the swing reached the search limit${(ring.reflectors || []).some((f) => f.surface) ? "; a layer takes the name of the interpreted surface (from its file name) whose picks along the circle lie within 25 ms, otherwise it stays unnamed" : ""}`);
     }
@@ -109,6 +121,19 @@
   function draw() {
     const { W, H } = Art.size();
     Art.caption(captionEl, P, captionLines());
+    if (animation) { cancelAnimationFrame(animation); animation = null; }
+    if (mode === "breathe") {
+      const { ctx, dpr } = Art.fit(canvas, W, H);
+      const period = 6000, start = performance.now();
+      const frame = (now) => {
+        const phase = (1 - Math.cos((2 * Math.PI * (now - start)) / period)) / 2;
+        paint(ctx, W, H, dpr, phase);
+        Art.finish(ctx, W, H);
+        animation = requestAnimationFrame(frame);
+      };
+      frame(start);
+      return;
+    }
     if (Art.param("format", "") === "svg") {  // show the SVG export in place of the canvas
       canvas.style.display = "none";
       captionEl.style.visibility = "hidden";
@@ -132,7 +157,73 @@
     return svg.toString();
   }
 
-  function paint(ctx, W, H, dpr) {
+  // Paint a polar raster to an offscreen canvas: `pixel(v, o, d)` writes the colour
+  // of value v (or of the pair of values in double mode) at byte offset o of d.
+  function rasterImage(Rmax, r0, dpr, pixel) {
+    const pw = Math.round(2 * Rmax * dpr) + 2;
+    const img = new ImageData(pw, pw);
+    const d = img.data, mid = pw / 2, R = Rmax * dpr, R0 = r0 * dpr, TAU = 2 * Math.PI;
+    const { nTheta } = polar(ringNo);
+    for (let y = 0; y < pw; y++) {
+      for (let x = 0; x < pw; x++) {
+        const dx = x - mid, dy = mid - y;
+        const r = Math.hypot(dx, dy);
+        const o = (y * pw + x) * 4;
+        if (r < R0 || r > R) { d[o + 3] = 0; continue; }
+        let th = Math.atan2(dy, dx);
+        if (th < 0) th += TAU;
+        const ft = (th / TAU) * nTheta;
+        const t0 = Math.floor(ft) % nTheta, t1 = (t0 + 1) % nTheta, wt = ft - Math.floor(ft);
+        const fs = ((r - R0) / (R - R0)) * (ns - 1);
+        const j0 = Math.min(Math.floor(fs), ns - 2), ws = fs - j0;
+        pixel(o, d, t0, t1, wt, j0, ws);
+      }
+    }
+    const off = document.createElement("canvas");
+    off.width = off.height = pw;
+    off.getContext("2d").putImageData(img, 0, 0);
+    return { off, pw };
+  }
+  const sampleRaster = (raster, t0, t1, wt, j0, ws) => {
+    const v00 = raster[t0 * ns + j0], v01 = raster[t0 * ns + j0 + 1];
+    const v10 = raster[t1 * ns + j0], v11 = raster[t1 * ns + j0 + 1];
+    return (1 - wt) * ((1 - ws) * v00 + ws * v01) + wt * ((1 - ws) * v10 + ws * v11);
+  };
+  const singleInk = (raster) => (o, d, t0, t1, wt, j0, ws) => {
+    const v = sampleRaster(raster, t0, t1, wt, j0, ws);
+    const li = Math.round((shape(Math.max(-1, Math.min(1, v))) + 1) * 256) * 3;
+    d[o] = LUT[li]; d[o + 1] = LUT[li + 1]; d[o + 2] = LUT[li + 2]; d[o + 3] = 255;
+  };
+  // two exposures: what both vintages have (the smaller of the two densities) is laid
+  // down in a neutral ink; what only the base has in excess goes down in blue/cyan,
+  // what only the monitor has in orange. Where the vintages agree the ring is neutral;
+  // an event that moved or faded leaves a coloured fringe. Density is |amplitude|^gamma,
+  // the excess is boosted (?boost=2) so a small disagreement still reads.
+  const BOOST = +Art.param("boost", 2.2);
+  const INK_A = paper ? [31, 79, 156] : [82, 200, 255], INK_B = paper ? [194, 86, 26] : [255, 176, 77];
+  const INK_C = paper ? [44, 46, 54] : [205, 205, 200];
+  const BG = d3.rgb(th.bg);
+  const doubleInk = (rA, rB) => (o, d, t0, t1, wt, j0, ws) => {
+    const a = Math.min(1, Math.pow(Math.abs(sampleRaster(rA, t0, t1, wt, j0, ws)), gamma));
+    const b = Math.min(1, Math.pow(Math.abs(sampleRaster(rB, t0, t1, wt, j0, ws)), gamma));
+    const common = Math.min(a, b);
+    const ea = Math.min(1, (a - common) * BOOST), eb = Math.min(1, (b - common) * BOOST);
+    for (let c = 0; c < 3; c++) {
+      const bg = [BG.r, BG.g, BG.b][c];
+      d[o + c] = paper
+        ? bg * (1 - common * (1 - INK_C[c] / 255)) * (1 - ea * (1 - INK_A[c] / 255)) * (1 - eb * (1 - INK_B[c] / 255))
+        : Math.min(255, bg + common * (INK_C[c] - bg) + ea * INK_A[c] + eb * INK_B[c]);
+    }
+    d[o + 3] = 255;
+  };
+  const imageCache = new Map();
+  const cachedImage = (key, Rmax, r0, dpr, pixel) => {
+    const id = `${key}:${ringNo}:${Rmax}:${dpr}`;
+    if (!imageCache.has(id)) imageCache.set(id, rasterImage(Rmax, r0, dpr, pixel));
+    return imageCache.get(id);
+  };
+
+  function paint(ctx, W, H, dpr, breath = 0) {
     ctx.fillStyle = th.bg;
     ctx.fillRect(0, 0, W, H);
     const cx = W / 2, cy = (H - 150) / 2 + 8;  // leave the bottom for the caption
@@ -140,9 +231,20 @@
     const r0 = Rmax * 0.1;
     const { raster, nTheta } = polar(ringNo);
     const TAU = 2 * Math.PI;
+    const place = ({ off, pw }, alpha = 1) => {
+      const px0 = Math.round((cx - Rmax) * dpr) - 1, py0 = Math.round((cy - Rmax) * dpr) - 1;
+      ctx.save(); ctx.globalAlpha = alpha;
+      ctx.drawImage(off, px0 / dpr, py0 / dpr, pw / dpr, pw / dpr);
+      ctx.restore();
+    };
 
-    if (mode === "image" && ctx.isSvg) {
-      paintBands(ctx, cx, cy, Rmax, r0);
+    if ((mode === "image" || mode === "double" || mode === "breathe") && ctx.isSvg) {
+      paintBands(ctx, cx, cy, Rmax, r0);  // the vector file carries the base only
+    } else if (mode === "double") {
+      place(cachedImage("double", Rmax, r0, dpr, doubleInk(raster, polar(ringNo, "monitor_amp").raster)));
+    } else if (mode === "breathe") {
+      place(cachedImage("base", Rmax, r0, dpr, singleInk(raster)));
+      place(cachedImage("monitor", Rmax, r0, dpr, singleInk(polar(ringNo, "monitor_amp").raster)), breath);
     } else if (mode === "image") {
       const pw = Math.round(2 * Rmax * dpr) + 2;
       const px0 = Math.round((cx - Rmax) * dpr) - 1, py0 = Math.round((cy - Rmax) * dpr) - 1;
@@ -221,7 +323,7 @@
     // number is read from the export (found in Python by ring_reflectors), none typed in.
     const ringData = P.rings[ringNo];
     const found = ringData.reflectors || [];
-    const nAnnot = Math.min(+Art.param("annot", 3), found.length);
+    const nAnnot = mode === "breathe" ? 0 : Math.min(+Art.param("annot", 3), found.length);
     if (nAnnot > 0) {
       const u = P.sample_unit, axis = P.domain.vertical === "time" ? "TWT" : "depth";
       const tt0 = P.samples[0], tt1 = P.samples[ns - 1];
@@ -294,6 +396,8 @@
   window.addEventListener("keydown", (e) => {
     if (e.key >= "1" && e.key <= String(P.rings.length)) { ringNo = +e.key - 1; draw(); }
     else if (e.key === "m") { mode = mode === "image" ? "wiggle" : "image"; draw(); }
+    else if (e.key === "d" && hasPair) { mode = "double"; draw(); }
+    else if (e.key === "b" && hasPair) { mode = mode === "breathe" ? "double" : "breathe"; draw(); }
     else if (e.key === "s") Art.savePNG(canvas, `seismic-rings-${ringNo + 1}-${mode}.png`);
     else if (e.key === "v") Art.saveText(svgString(), `seismic-rings-${ringNo + 1}-${mode}.svg`, "image/svg+xml");
   });
