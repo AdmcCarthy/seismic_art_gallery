@@ -1,7 +1,7 @@
 Cube, blind: LEANS TIME; consistent (weakly): the evidence leans time
 Cube, told water depth 91 m: LEANS TIME
-  The traces are blank above about 204: the shallow data look muted, so the water bottom may not be in the cube and the seabed rule cannot be used.
+  The traces are blank above about 196: the shallow data look muted, so the water bottom may not be in the cube and the seabed rule cannot be used.
 Seabed horizons over the cube footprint: 110.7 ms TWT (p10-p90 101.0-119.8; Near_Seabed, ST0202 survey) and 91.2 m depth (p10-p90 84.2-100.8; Seabed VelBuild 2011)
 Implied 2z/t = 1648 m/s against about 1480 for water: the two horizons differ by about 10% (different survey, datum or pick), so the tolerance is 15%
 The TWT-labelled seabed against that water depth: seabed at 110.665 is a water depth of 82 m read as time (1480 m/s) or 111 m read as depth, against the water depth of the depth seabed horizon (91.2 m); only time fits
-Cube data start (median 204 ms) and the seabed under each trace (110 ms): data start below the seabed on 100% of 249 traces, median gap 48 ms: the seabed is in the muted part, so the cube cannot show it
+Cube data start (median 196 ms) and the seabed under each trace (110 ms): data start below the seabed on 100% of 249 traces, median gap 40 ms: the seabed is in the muted part, so the cube cannot show it
