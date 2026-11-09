@@ -44,7 +44,7 @@
     <div id="band" class="hz-band"></div>
     <div class="hz-controls">
       <label>height <input id="height" type="range" min="80" max="320" value="80"></label>
-      <label>palette <select id="palette"><option value="fjord">fjord, layers alternate</option><option value="shale">shale, neutral</option></select></label>
+      <label>palette <select id="palette"><option value="shale">shale, neutral</option><option value="fjord">fjord, layers alternate</option></select></label>
       <label>highlight <select id="highlight"></select></label>
       <label><input id="fade" type="checkbox" checked> fade into the page</label>
       <label><input id="caption" type="checkbox"> label</label>
@@ -66,7 +66,8 @@
   const url = q.get("data") || "data/synthetic/header.json";
   const P = await (await fetch(url)).json();
   const el = document.getElementById("band");
-  const opts = { height: +q.get("height") || 80, highlight: q.get("highlight") || P.highlight, fade: q.get("fade") !== "0", caption: q.get("caption") === "1", palette: q.get("palette") || "fjord" };
+  const opts = { height: +q.get("height") || 80, highlight: q.get("highlight") || P.highlight, fade: q.get("fade") !== "0", caption: q.get("caption") === "1", palette: q.get("palette") || "shale" };
+  for (const k of ["strength", "gamma", "saturation"]) if (q.get(k) !== null) opts[k] = +q.get(k);  // ?strength=0.7&saturation=0.85 to tune
   let band = horizonBand(el, P, opts).observe();
   const sel = document.getElementById("highlight");
   sel.innerHTML = P.surfaces.map((s) => `<option${s.label === opts.highlight ? " selected" : ""}>${s.label}</option>`).join("");
